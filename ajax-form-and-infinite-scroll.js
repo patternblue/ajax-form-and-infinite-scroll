@@ -224,37 +224,36 @@ var movieDisplayApp = (function(){
 			console.log('ran here');
 			$('.movieDetails:last').append(movieDetail); 
 		});
+		$('.class:last').effect("highlight",{},1000);
 	}
+
 	function ajaxRequestMovie(){
-		// get data from form
-		var s = $('#title').val();
-		var i = $('#movieID').val();
-		var type = $('#type :selected').text();
-		var y = $('#year').val();
-		var plot = $('#plot :selected').text();
-		if($('input[name=rating]:checked').val() === 'Yes'){
-			var tomatoes = 'true';
+
+		// get data from form and turn into json
+		var formArray = $('#myForm').serializeArray();
+		var formObject = {};
+		for(var i in formArray){
+			formObject[formArray[i].name] = formArray[i].value;
+		}
+		formObject.type = $('#type :selected').text();
+		formObject.plot = $('#plot :selected').text();
+		if(formObject.tomatoes === 'Yes'){
+			formObject.tomatoes = 'true';
 		}else{
-			var tomatoes = 'false';
+			formObject.tomatoes = 'false';
 		}
 
 		// make ajax request with form data based on omdb's API
 		$.ajax({
 			url: 'http://www.omdbapi.com/?',
-			data:{
-				s: s,
-				i: i,
-				type: type,
-				y: y,
-				r: 'json'
-			},
+			data: formObject,
 			type: 'GET',
 			dataType: 'json',
-
+			timeout: 5000,
 			success:function(movieResults){
 				// ajax returns an object of {Search: Array}
-				$('#ajaxNotification').empty();
-				ajaxRequestMovieById(movieResults.Search, plot, tomatoes);
+				// $('#ajaxNotification').empty();
+				ajaxRequestMovieById(movieResults.Search, formObject.plot, formObject.tomatoes);
 			},
 			error:function(xhr, status, errorThrown){
 				console.log('there was an error!');
@@ -263,9 +262,6 @@ var movieDisplayApp = (function(){
 				console.dir( xhr );
 			},
 			complete: function(){
-			},
-			beforeSend: function(){
-				$('#ajaxNotification').html('<p>loading...</p>');
 			}
 		});
 	}
@@ -294,18 +290,21 @@ var movieDisplayApp = (function(){
 			});		
 		}
 	}
+	function checkScrollBottom(){
+		if($(window).scrollTop() + $(window).height() > $(document).height() - $('.movie').height()) {
+			ajaxRequestMovie();
+		}
+	}
 	function main(){
 		var $myForm = $('#myForm');
 		$myForm.validation();
 
 		// events
-
 		// display submit error if any field has errors
 		$('#submit').click(function(event){
 
 			// check if either title or movieID is filled in
 			if($('#title').val()){
-				// console.log('ran');
 				$('#title').attr('validation', 'title');
 				$('#movieID').attr('validation', 'movieID');
 			}else{
@@ -321,11 +320,19 @@ var movieDisplayApp = (function(){
 				$('#submitError').hide();
 				// do ajax
 				ajaxRequestMovie();
+				// attach scroll event listener, check if scrolled to bottom
+				$(window).on('scroll', checkScrollBottom);
 			}
-			// console.log('ran');
 			event.preventDefault();
 		});
-		
+
+		$( "#ajaxNotification" )
+		    .ajaxStart(function() {
+		        $(this).show();
+		    })
+		    .ajaxStop(function() {
+		        $(this).hide();
+		    });
 	}
 
 

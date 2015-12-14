@@ -1,10 +1,13 @@
+<!DOCTYPE html>
 <html>
 <head>
 	<title>The Odin Project: Submitting a form with AJAX and infinite scroll/</title>
 	<link rel="stylesheet" type="text/css" href="css/style.css"/>
-	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<!-- // <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> -->
+	<script src="external/jquery/jquery.js"></script>
+ 	<link rel="stylesheet" href="jquery-ui.min.css">
+	<script src="jquery-ui.min.js"></script>
 
-  	<!-- // <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> -->
 	<script type="text/javascript" src="ajax-form-and-infinite-scroll.js"></script>
 </head>
 <body>
@@ -13,19 +16,19 @@
 			<legend>Movie Search Form</legend>
 			<p>
 				<label for="title">Title</label>
-				<input type="text" id="title"/>
+				<input type="text" name="s" id="title"/>
 			</p>
 			<p>
 				<label for="movieID">ID</label>
-				<input type="text" id="movieID" validation="movieID"/>
+				<input type="text" name="i" id="movieID" validation="movieID"/>
 			</p>
 			<p>
 				<label for="year">Year</label>
-				<input type="text" id="year" validation="year"/>
+				<input type="text" name="y" id="year" validation="year"/>
 			</p>
 			<p>
 				<label for="type">Type?</label>
-				<select id="type" value="">
+				<select name="type" id="type" value="">
 					<option value="0">movie</option>
 					<option value="1">series</option>
 					<option value="2">episode</option>
@@ -33,15 +36,15 @@
 			</p>
 			<p>
 				<label for="plot">Plot</label>
-				<select id="plot" value="">
+				<select name="plot" id="plot" value="">
 					<option value="0">short</option>
 					<option value="1">full</option>
 				</select>
 			</p>
 			<p>
 				<label for="rating">Rating?</label>
-				<input type="radio" name="rating" value="Yes" checked>Yes
-				<input type="radio" name="rating" value="No">No
+				<input type="radio" name="tomatoes" value="Yes" checked>Yes
+				<input type="radio" name="tomatoes" value="No">No
 			</p>
 
 			<p>
@@ -51,7 +54,7 @@
 			</p>
 		</fieldset>
 		<div id="ajaxContent"></div>
-		<div id="ajaxNotification"></div>
+		<div id="ajaxNotification"><p>loading...</p></div>
 	</form>
 </body>
 </html>
