@@ -197,78 +197,146 @@
 })(jQuery);
 
 
-// run the plugin on my form when the DOM is ready
-$(document).ready(function(){
-	var $myForm = $('#myForm');
-	$myForm.validation();
+var movieDisplayApp = (function(){
 
-	// display submit error if any field has errors
-	$('#submit').click(function(event){
-
-		// check if either title or movieID is filled in
-		if($('#title').val()){
-			// console.log('ran');
-			$('#title').attr('validation', 'title');
-			$('#movieID').attr('validation', 'movieID');
+	// variables
+	var movies = [];
+	// methods
+	function displayMovie(movie){
+		var poster = '<img src="' + movie.Poster + '" />';
+		var movieDetails = [];
+		movieDetails.push('<li>Title: ' + movie.Title + '</li>');
+		movieDetails.push('<li>Released: ' + movie.Released + '</li>');
+		movieDetails.push('<li>imdbID: ' + movie.imdbID + '</li>');
+		movieDetails.push('<li>Type: ' + movie.Type + '</li>');
+		movieDetails.push('<li>Director: ' + movie.Director + '</li>');
+		movieDetails.push('<li>Cast: ' + movie.Actors + '</li>');
+		movieDetails.push('<li>Country: ' + movie.Country + '</li>');
+		movieDetails.push('<li>Genre: ' + movie.Genre + '</li>');
+		movieDetails.push('<li>Language: ' + movie.Language + '</li>');
+		movieDetails.push('<li>Plot: ' + movie.Plot + '</li>');
+		movieDetails.push('<li>Rated: ' + movie.Rated + '</li>');
+		movieDetails.push('<li>Runtime: ' + movie.Runtime + '</li>');
+		movieDetails.push('<li>tomatoRating: ' + movie.tomatoRating + '</li>');
+		var entry = '<div class="movie">' + poster + '<ul class="movieDetails"></ul></div>';
+		$('#ajaxContent').append(entry); 
+		movieDetails.forEach(function(movieDetail){
+			console.log('ran here');
+			$('.movieDetails:last').append(movieDetail); 
+		});
+	}
+	function ajaxRequestMovie(){
+		// get data from form
+		var s = $('#title').val();
+		var i = $('#movieID').val();
+		var type = $('#type :selected').text();
+		var y = $('#year').val();
+		var plot = $('#plot :selected').text();
+		if($('input[name=rating]:checked').val() === 'Yes'){
+			var tomatoes = 'true';
 		}else{
-			$('#title').attr('validation', 'requireAtLeastOne title');
-			$('#movieID').attr('validation', 'requireAtLeastOne movieID');			
+			var tomatoes = 'false';
 		}
 
-		if(!$myForm.validate()){
-			$('#submitError').show();
-		}else{
-			$('#submitError').hide();
-			var t = $('#title').val();
-			var i = $('#movieID').val();
-			var type = $('#type :selected').text();
-			var y = $('#year').val();
-			var plot = $('#plot :selected').text();
-			if($('input[name=rating]:checked').val() === 'Yes'){
-				var tomatoes = true;
-			}else{
-				var tomatoes = false;
+		// make ajax request with form data based on omdb's API
+		$.ajax({
+			url: 'http://www.omdbapi.com/?',
+			data:{
+				s: s,
+				i: i,
+				type: type,
+				y: y,
+				r: 'json'
+			},
+			type: 'GET',
+			dataType: 'json',
+
+			success:function(movieResults){
+				// ajax returns an object of {Search: Array}
+				$('#ajaxNotification').empty();
+				ajaxRequestMovieById(movieResults.Search, plot, tomatoes);
+			},
+			error:function(xhr, status, errorThrown){
+				console.log('there was an error!');
+		        console.log( "Error: " + errorThrown );
+		    	console.log( "Status: " + status );
+				console.dir( xhr );
+			},
+			complete: function(){
+			},
+			beforeSend: function(){
+				$('#ajaxNotification').html('<p>loading...</p>');
 			}
-			console.log(t + i + type + y + plot + tomatoes);
-			console.log(type);
-			// console.log(tomatoes);
-
+		});
+	}
+	function ajaxRequestMovieById(movieList, plot, tomatoes){
+		var moviesFromIDs = [];
+		for (var i in movieList){
 			$.ajax({
-				url: 'http://www.omdbapi.com/?',
-				data:{
-					t: t,
-					i: i,
-					type: type,
-					y: y,
-					plot: plot,
-					tomatoes: tomatoes,
-					r: 'json'
-				},
+				url: 'http://www.omdbapi.com/?i=' + movieList[i].imdbID + '&plot=' + plot + '&tomatoes=' + tomatoes + '&r=json',
 				type: 'GET',
-
 				dataType: 'json',
 
-				success:function(json){
-					console.log(json);
+				success:function(movie){
+					displayMovie(movie);
 				},
 				error:function(xhr, status, errorThrown){
 					console.log('there was an error!');
 			        console.log( "Error: " + errorThrown );
-    		    	console.log( "Status: " + status );
-        			console.dir( xhr );
+			    	console.log( "Status: " + status );
+					console.dir( xhr );
 				},
 				complete: function(){
-
 				},
 				beforeSend: function(){
-					$('#ajaxContent').html('loading...');
+					// $('#ajaxNotification').html('loading...');
 				}
-			});
+			});		
 		}
+	}
+	function main(){
+		var $myForm = $('#myForm');
+		$myForm.validation();
 
-		event.preventDefault();
-	});
-});
+		// events
+
+		// display submit error if any field has errors
+		$('#submit').click(function(event){
+
+			// check if either title or movieID is filled in
+			if($('#title').val()){
+				// console.log('ran');
+				$('#title').attr('validation', 'title');
+				$('#movieID').attr('validation', 'movieID');
+			}else{
+				$('#title').attr('validation', 'requireAtLeastOne title');
+				$('#movieID').attr('validation', 'requireAtLeastOne movieID');			
+			}
+
+			// do ajax if client-side validation succeeds
+			// or show error
+			if(!$myForm.validate()){
+				$('#submitError').show();
+			}else{
+				$('#submitError').hide();
+				// do ajax
+				ajaxRequestMovie();
+			}
+			// console.log('ran');
+			event.preventDefault();
+		});
+		
+	}
+
+
+	return {
+		main: main
+	}
+})();
+
+// run the plugin on my form when the DOM is ready
+$(document).ready(movieDisplayApp.main);
+
 
 
 

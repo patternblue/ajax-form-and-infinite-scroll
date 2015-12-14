@@ -5,3 +5,21 @@ input.error{
 #submitError{
 	display: none;
 }
+#ajaxContent{
+	width: 1020px;
+}
+#ajaxContent .movie{
+	overflow: auto;
+}
+#ajaxContent img{
+	/*position: absolute;*/
+	float: left;
+	/*background: red;*/
+}
+#ajaxContent .movieDetails{
+	float: left;
+	background: red;
+	/*position: absolute;*/
+	/*top: 50%;*/
+	/*clear: both;*/
+}
