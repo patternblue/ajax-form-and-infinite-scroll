@@ -28,4 +28,5 @@ input.error{
 
 #ajaxNotification {
 	display: none;
+	background: red;
 }
