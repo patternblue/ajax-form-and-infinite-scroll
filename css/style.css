@@ -11,22 +11,20 @@ input.error{
 }
 #ajaxContent .movie{
 	overflow: auto;
+	margin: 10px 0;
 }
 #ajaxContent img{
-	/*position: absolute;*/
 	float: left;
-	/*background: red;*/
 }
 #ajaxContent .movieDetails{
-	/*float: left;*/
 	list-style-type: none;
-	/*background: red;*/
-	/*position: absolute;*/
-	/*top: 50%;*/
-	/*clear: both;*/
 }
 
 #ajaxNotification {
+	text-align: center;
+	position: fixed;
+	width: 100%;
 	display: none;
-	background: red;
+	background: #99e;
+	bottom: 0px;
 }

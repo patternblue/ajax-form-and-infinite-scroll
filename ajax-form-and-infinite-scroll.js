@@ -201,10 +201,12 @@ var movieDisplayApp = (function(){
 
 	// variables
 	var movies = [];
-	// var display10MoviesDone = false;
+
 	// methods
-	function displayMovie(movie, index){
-		var poster = '<img src="' + movie.Poster + '" />';
+	function displayMovie(movie, index, lastIndex){
+		var poster = '<img src="' + movie.Poster + '" alt="Movie Poster" onerror="this.style.display = \'none\'"/>';
+		var entry = '<div class="movie">' + poster + '<ul class="movieDetails"></ul></div>';
+		var $entry = $(entry);
 		var movieDetails = [];
 		movieDetails.push('<li>Title: ' + movie.Title + '</li>');
 		movieDetails.push('<li>Released: ' + movie.Released + '</li>');
@@ -219,9 +221,6 @@ var movieDisplayApp = (function(){
 		movieDetails.push('<li>Rated: ' + movie.Rated + '</li>');
 		movieDetails.push('<li>Runtime: ' + movie.Runtime + '</li>');
 		movieDetails.push('<li>tomatoRating: ' + movie.tomatoRating + '</li>');
-		var entry = '<div class="movie">' + poster + '<ul class="movieDetails"></ul></div>';
-
-		var $entry = $(entry);
 		movieDetails.forEach(function(detail){
 			$entry.find('.movieDetails').append(detail);
 		});
@@ -232,13 +231,16 @@ var movieDisplayApp = (function(){
 		setTimeout(function(){
 			$('#ajaxContent').append(entry); 
 			$('.movie:last').effect("highlight",{color: '#0c0'},1000);
-			console.log(typeof index);
-			if(index == 9){
-				// console.log('ran');
-				// attach scroll event listener, check if scrolled to bottom
-				$(window).on('scroll', checkScrollBottom);
+
+			// check if the movie is the last one of the list
+			// then attach scroll event listener, and check if scrolled to bottom
+			// index is of type string
+			if(index >= lastIndex){
+			    $('#ajaxNotification').hide("fade", "swing", 500, function(){
+					$(window).on('scroll', checkScrollBottom);
+			    });
 			}
-		}, index*500);
+		}, index*400);
 	}
 
 	function ajaxRequestMovies(){
@@ -280,21 +282,20 @@ var movieDisplayApp = (function(){
 		});
 
 	}
+	// API requires a request by ID in order to send more movie details (poster, plot, ...)
 	function ajaxRequestMoviesByID(movieList, plot, tomatoes){
 		var moviesFromIDs = [];
 		for (var i in movieList){
 
-			$('#ajaxNotification').show();
 			// ajax call wrapped in a IIFE, passed with the current i before i changes in the for loop 
-			(function(index){
+			(function(index, lastIndex){
 				$.ajax({
 					url: 'http://www.omdbapi.com/?i=' + movieList[index].imdbID + '&plot=' + plot + '&tomatoes=' + tomatoes + '&r=json',
 					type: 'GET',
 					dataType: 'json',
 
 					success:function(movie){
-						displayMovie(movie, index);
-						$('#ajaxNotification').hide();
+						displayMovie(movie, index, lastIndex - 1);
 					},
 					error:function(xhr, status, errorThrown){
 						console.log('there was an error!');
@@ -303,7 +304,7 @@ var movieDisplayApp = (function(){
 						console.dir( xhr );
 					}
 				});		
-			})(i);
+			})(i, movieList.length);
 		}
 	}
 
@@ -318,7 +319,12 @@ var movieDisplayApp = (function(){
 		$myForm.validation();
 
 		// events
+
 		// display submit error if any field has errors
+		$("img").error(function(){ 
+		    $(this).hide();
+		});
+
 		$('#submit').click(function(event){
 
 			// check if either title or movieID is filled in
@@ -338,18 +344,19 @@ var movieDisplayApp = (function(){
 				$('#submitError').hide();
 				// do ajax
 				ajaxRequestMovies();
-				// attach scroll event listener, check if scrolled to bottom
-				// $(window).on('scroll', checkScrollBottom);
 			}
 			event.preventDefault();
 		});
 
-		// $(document).ajaxStart(function() {
-		// 	console.log(this);
-		// 	$('#ajaxNotification').show();
-		// }).ajaxStop(function() {
-		//     $('#ajaxNotification').hide();
-		// });
+		// 'loading...' notification at the start of every ajax request 
+		$(document).ajaxStart(function() {
+			$('#ajaxNotification').show();
+		});
+
+		$('#reset').click(function(){
+			$(window).off('scroll');
+		    document.getElementById('ajaxContent').innerHTML = "";
+		});
 	}
 
 
